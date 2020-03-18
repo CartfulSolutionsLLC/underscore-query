@@ -1,74 +1,19 @@
-underscore-query (v2.0)
+json-query (v0.0.1)
 ===================
 
-[![Build Status](https://secure.travis-ci.org/davidgtonge/underscore-query.png)](http://travis-ci.org/davidgtonge/underscore-query)
-
-A lightweight query API plugin for Underscore.js - works in the Browser and on the Server.
-This project was originally [Backbone Query](https://github.com/davidgtonge/backbone_query), however I found that it
-was useful to have the ability to query arrays as well as Backbone Collections. So the library has been ported to
-underscore, and backbone-query now uses underscore-query.
-
-In updating the project several new features have been added, including the ability to use a chainable query api.
+A lightweight query API plugin for Json collections - works in the Browser and on the Server. This project has been forked from [underscore-query](https://github.com/davidgtonge/underscore-query.git).
 
 ### Features
 
- - Search for objects with a Query API similar to [MongoDB](http://www.mongodb.org/display/DOCS/Advanced+Queries)
+ - Search for objects with a Query API similar to [MongoDB](https://docs.mongodb.com/manual/reference/operator/query/)
  - Use a complex query object, or build queries up with a chainable api
  - Full support for compound queries ($not, $nor, $or, $and), including nested compound queries.
  - Full support for querying nested arrays (see `$elemMatch`)
  - Accepts dot notation to query deep properties (e.g. `{"stats.views.december": 100}`)
- - Custom getters can be defined, (e.g. `.get` for Backbone)
- - Works well with underscore chaining
+ - Custom getters can be defined.
  - Dynamically evaluates functions on query (e.g. `{"startTime": {$gt: () => new Date}}` will ensure `startTime` property is greater than now)
 
-Please report any bugs, feature requests in the issue tracker.
 Pull requests are welcome!
-
-
-Installation
-============
-
-#### Client Side Installation:
-To install, include the `lib/underscore-query.min.js` file in your HTML page, after Underscore (or Lodash).
-`_.query` will now be available for you to use.
-
-If you use AMD, then you can use "lib/underscore-query.amd.js".
-This will return a function that accepts either underscore or lodash. This function
-also accepts an optional boolean argument on whether to mixin the query methods to underscore/lodash.
-If you are using AMD and you want the methods mixed in, then you'd only need to require "underscore-query" once
-probably in your init script:
-
-```js
-define('myModule',
-    ['underscore', 'underscore-query'],
-    function ( _, underscoreQuery ) {
-        // opt 1
-        underscoreQuery(_); // _.query is now available on the underscore module
-        // opt 2
-        var query = underscoreQuery(_, false) // query is available as a local variable with all the query methods
-    }
-```
-
-#### Server side (node.js) installation
-You can install with NPM: `npm install underscore-query`
-The library can work with either lodash or underscore, when you first require it in it exposes a method that takes
-either underscore or lodash:
-
-```ja
-// With Underscore
-_ = require("underscore");
-require("underscore-query")(_);
-
-// With Lodash
-_ = require("lodash");
-require("underscore-query")(_);
-
-// If you don't want the query methods 'mixed in'
-_ = require("underscore");
-query = require("underscore-query")(_, false);
-```
-
-
 
 Basic Usage
 ===========
@@ -76,17 +21,19 @@ Basic Usage
 The following are some basic examples:
 
 ```js
-_.query( MyCollection, {
+import { runQuery } from 'json-query';
+
+runQuery( MyCollection, {
     featured:true, 
     likes: {$gt:10}
 });
 // Returns all models where the featured attribute is true and there are
 // more than 10 likes
 
-_.query( MyCollection, {tags: { $any: ["coffeescript", "backbone", "mvc"]}});
+runQuery( MyCollection, {tags: { $any: ["coffeescript", "backbone", "mvc"]}});
 // Finds models that have either "coffeescript", "backbone", "mvc" in their "tags" attribute
 
-_.query(MyCollection, {
+runQuery(MyCollection, {
   // Models must match all these queries
   $and: [
     {title: {$like: "news"}}, // Title attribute contains the string "news"
@@ -101,19 +48,19 @@ _.query(MyCollection, {
   //Category attribute is either "code", "programming", or "javascript"
 });
 
-titles = _.query.build( MyCollection )
+titles = runQuery.build( MyCollection )
   .and("published", true)
   .or("likes", {$gt:10})
   .or("tags":["javascript", "coffeescript"])
   .chain()
-  .sortBy(_.query.get("likes"))
+  .sortBy(runQuery.get("likes"))
   .pluck("title")
   .value();
 // Builds a query up programatically
 // Runs the query, sort's by likes, and plucks the titles.
 
 
-query = _.query.build()
+query = runQuery.build()
   .and("published", true)
   .or("likes", {$gt:10})
   .or("tags":["javascript", "coffeescript"])
@@ -123,22 +70,6 @@ resultsB = query.all(collectionB)
 // Builds a query and then runs it on 2 seperate collections
 
 ```
-
-Or if CoffeeScript is your thing (the source is written in CoffeeScript), try this:
-
-```coffeescript
-_.query MyCollection,
-  $and: [
-    likes: $lt: 15
-  ]
-  $or: [
-    {content: $like: "news"}
-    {featured: $exists: true}
-  ]
-  $not:
-    colors: $contains: "yellow"
-```
-
 
 
 Query API
@@ -152,12 +83,12 @@ If the attribute in the model is an array then the query value is searched for i
 If the query value is an object (including array) then a deep comparison is performed using underscores `_.isEqual`
 
 ```javascript
-_.query( MyCollection, { title:"Test" });
+runQuery( MyCollection, { title:"Test" });
 // Returns all models which have a "title" attribute of "Test"
 
-_.query( MyCollection, { title: {$equal:"Test"} }); // Same as above
+runQuery( MyCollection, { title: {$equal:"Test"} }); // Same as above
 
-_.query( MyCollection, { colors: "red" });
+runQuery( MyCollection, { colors: "red" });
 // Returns models which contain the value "red" in a "colors" attribute that is an array.
 
 MyCollection.query ({ colors: ["red", "yellow"] });
@@ -168,7 +99,7 @@ MyCollection.query ({ colors: ["red", "yellow"] });
 Assumes that the model property is an array and searches for the query value in the array
 
 ```js
-_.query( MyCollection, { colors: {$contains: "red"} });
+runQuery( MyCollection, { colors: {$contains: "red"} });
 // Returns models which contain the value "red" in a "colors" attribute that is an array.
 // e.g. a model with this attribute colors:["red","yellow","blue"] would be returned
 ```
@@ -177,7 +108,7 @@ _.query( MyCollection, { colors: {$contains: "red"} });
 "Not equal", the opposite of $equal, returns all models which don't have the query value
 
 ```js
-_.query( MyCollection, { title: {$ne:"Test"} });
+runQuery( MyCollection, { title: {$ne:"Test"} });
 // Returns all models which don't have a "title" attribute of "Test"
 ```
 
@@ -185,25 +116,25 @@ _.query( MyCollection, { title: {$ne:"Test"} });
 These conditional operators can be used for greater than and less than comparisons in queries
 
 ```js
-_.query( MyCollection, { likes: {$lt: () -> 10} });
+runQuery( MyCollection, { likes: {$lt: () -> 10} });
 // Returns all models which have a "likes" attribute of less than 10
-_.query( MyCollection, { likes: {$lte: () -> 10} });
+runQuery( MyCollection, { likes: {$lte: () -> 10} });
 // Returns all models which have a "likes" attribute of less than or equal to 10
-_.query( MyCollection, { likes: {$gt:10} });
+runQuery( MyCollection, { likes: {$gt:10} });
 // Returns all models which have a "likes" attribute of greater than 10
-_.query( MyCollection, { likes: {$gte:10} });
+runQuery( MyCollection, { likes: {$gte:10} });
 // Returns all models which have a "likes" attribute of greater than or equal to 10
 ```
 
 These may further be combined:
 
 ```js
-_.query( MyCollection, { likes: {$gt:2, $lt:20} });
+runQuery( MyCollection, { likes: {$gt:2, $lt:20} });
 // Returns all models which have a "likes" attribute of greater than 2 or less than 20
 // This example is also equivalent to $between: [2,20]
-_.query( MyCollection, { likes: {$gte:2, $lte:20} });
+runQuery( MyCollection, { likes: {$gte:2, $lte:20} });
 // Returns all models which have a "likes" attribute of greater than or equal to 2, and less than or equal to 20
-_.query( MyCollection, { likes: {$gte:2, $lte: 20, $ne: 12} });
+runQuery( MyCollection, { likes: {$gte:2, $lte: 20, $ne: 12} });
 // Returns all models which have a "likes" attribute between 2 and 20 inclusive, but not equal to 12
 ```
 
@@ -214,16 +145,16 @@ To check if a value is in-between 2 query values use the $between operator and s
 
 ```js
 // Returns all models which have a "likes" attribute of greater than 5 and less than 15
-_.query( MyCollection, { likes: {$between:[5,15] } });
+runQuery( MyCollection, { likes: {$between:[5,15] } });
 // Returns all models which have a "likes" attribute of greater-equal-to  5 and less-equal-to 15
-_.query( MyCollection, { likes: {$betweene:[5,15] } });
+runQuery( MyCollection, { likes: {$betweene:[5,15] } });
 ```
 
 ### $in
 An array of possible values can be supplied using $in, a model will be returned if any of the supplied values is matched
 
 ```js
-_.query( MyCollection, { title: {$in:["About", "Home", "Contact"] } });
+runQuery( MyCollection, { title: {$in:["About", "Home", "Contact"] } });
 // Returns all models which have a title attribute of either "About", "Home", or "Contact"
 ```
 
@@ -231,7 +162,7 @@ _.query( MyCollection, { title: {$in:["About", "Home", "Contact"] } });
 "Not in", the opposite of $in. A model will be returned if none of the supplied values is matched
 
 ```js
-_.query( MyCollection, { title: {$nin:["About", "Home", "Contact"] } });
+runQuery( MyCollection, { title: {$nin:["About", "Home", "Contact"] } });
 // Returns all models which don't have a title attribute of either
 // "About", "Home", or "Contact"
 ```
@@ -240,7 +171,7 @@ _.query( MyCollection, { title: {$nin:["About", "Home", "Contact"] } });
 Assumes the model property is an array and only returns models where all supplied values are matched.
 
 ```js
-_.query( MyCollection, { colors: {$all:["red", "yellow"] } });
+runQuery( MyCollection, { colors: {$all:["red", "yellow"] } });
 // Returns all models which have "red" and "yellow" in their colors attribute.
 // A model with the attribute colors:["red","yellow","blue"] would be returned
 // But a model with the attribute colors:["red","blue"] would not be returned
@@ -250,7 +181,7 @@ _.query( MyCollection, { colors: {$all:["red", "yellow"] } });
 Assumes the model property is an array and returns models where any of the supplied values are matched.
 
 ```js
-_.query( MyCollection, { colors: {$any:["red", "yellow"] } });
+runQuery( MyCollection, { colors: {$any:["red", "yellow"] } });
 // Returns models which have either "red" or "yellow" in their colors attribute.
 ```
 
@@ -258,7 +189,7 @@ _.query( MyCollection, { colors: {$any:["red", "yellow"] } });
 Inverse of $any. Returns an array of items where none of the results match
 
 ```js
-_.query( MyCollection, { colors: {$none:["yellow", "black"] } });
+runQuery( MyCollection, { colors: {$none:["yellow", "black"] } });
 // Returns models which are neither "black" or "yellow" in their colors attribute.
 ```
 
@@ -267,7 +198,7 @@ Assumes the model property has a length (i.e. is either an array or a string).
 Only returns models the model property's length matches the supplied values
 
 ```js
-_.query( MyCollection, { colors: {$size:2 } });
+runQuery( MyCollection, { colors: {$size:2 } });
 // Returns all models which 2 values in the colors attribute
 ```
 
@@ -275,9 +206,9 @@ _.query( MyCollection, { colors: {$size:2 } });
 Checks for the existence of an attribute. Can be supplied either true or false.
 
 ```js
-_.query( MyCollection, { title: {$exists: true } });
+runQuery( MyCollection, { title: {$exists: true } });
 // Returns all models which have a "title" attribute
-_.query( MyCollection, { title: {$has: false } });
+runQuery( MyCollection, { title: {$has: false } });
 // Returns all models which don't have a "title" attribute
 ```
 
@@ -286,7 +217,7 @@ Assumes the model attribute is a string and checks if the supplied query value i
 Uses indexOf rather than regex for performance reasons
 
 ```js
-_.query( MyCollection, { title: {$like: "Test" } });
+runQuery( MyCollection, { title: {$like: "Test" } });
 //Returns all models which have a "title" attribute that
 //contains the string "Test", e.g. "Testing", "Tests", "Test", etc.
 ```
@@ -295,7 +226,7 @@ _.query( MyCollection, { title: {$like: "Test" } });
 The same as above but performs a case insensitive search using indexOf and toLowerCase (still faster than Regex)
 
 ```js
-_.query( MyCollection, { title: {$likeI: "Test" } });
+runQuery( MyCollection, { title: {$likeI: "Test" } });
 //Returns all models which have a "title" attribute that
 //contains the string "Test", "test", "tEst","tesT", etc.
 ```
@@ -304,9 +235,9 @@ _.query( MyCollection, { title: {$likeI: "Test" } });
 Checks if the model attribute matches the supplied regular expression. The regex query can be supplied without the `$regex` keyword
 
 ```js
-_.query( MyCollection, { content: {$regex: /coffeescript/gi } });
+runQuery( MyCollection, { content: {$regex: /coffeescript/gi } });
 // Checks for a regex match in the content attribute
-_.query( MyCollection, { content: /coffeescript/gi });
+runQuery( MyCollection, { content: /coffeescript/gi });
 // Same as above
 ```
 
@@ -315,17 +246,16 @@ A callback function can be supplied as a test. The callback will receive the att
 `this` will be set to the current model, this can help with tests against computed properties
 
 ```js
-_.query( MyCollection, { title: {$cb: function(attr){ return attr.charAt(0) === "c";}} });
+runQuery( MyCollection, { title: {$cb: function(attr){ return attr.charAt(0) === "c";}} });
 // Returns all models that have a title attribute that starts with "c"
 
-_.query( MyCollection, { computed_test: {$cb: function(){ return this.computed_property() > 10;}} });
+runQuery( MyCollection, { computed_test: {$cb: function(){ return this.computed_property() > 10;}} });
 // Returns all models where the computed_property method returns a value greater than 10.
 ```
 
 For callbacks that use `this` rather than the model attribute, the key name supplied is arbitrary and has no
 effect on the results. If the only test you were performing was like the above test it would make more sense
-to simply use `MyCollection.filter`. However if you are performing other tests or are using the paging / sorting /
-caching options of backbone query, then this functionality is useful.
+to simply use `MyCollection.filter`.
 
 ### $elemMatch
 This operator allows you to perform queries in nested arrays similar to [MongoDB](http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries-%24elemMatch)
@@ -400,12 +330,12 @@ b = new testModel({
 
 MyCollection = new QueryCollection([a, b]);
 
-_.query( MyCollection, {
+runQuery( MyCollection, {
   full_name: { $computed: "Dave Tonge" }
 });
 // Returns the model with the computed `full_name` equal to Dave Tonge
 
-_.query( MyCollection, {
+runQuery( MyCollection, {
   full_name: { $computed: { $likeI: "john smi" } }
 });
 // Any of the previous operators can be used (including elemMatch is required)
@@ -421,16 +351,16 @@ to specify either `$or`, `$nor`, `$not` to implement alternate logic.
 ### $and
 
 ```js
-_.query( MyCollection, { $and: [{ title: {$like: "News"} }, { likes: {$gt: 10}} ]});
+runQuery( MyCollection, { $and: [{ title: {$like: "News"} }, { likes: {$gt: 10}} ]});
 // Returns all models that contain "News" in the title and have more than 10 likes.
-_.query( MyCollection, { title: {$like: "News"}, likes: {$gt: 10} });
+runQuery( MyCollection, { title: {$like: "News"}, likes: {$gt: 10} });
 // Same as above as $and is assumed if not supplied
 ```
 
 ### $or
 
 ```js
-_.query( MyCollection, { $or: [{ title: {$like: "News"}}, { likes: {$gt: 10}}]});
+runQuery( MyCollection, { $or: [{ title: {$like: "News"}}, { likes: {$gt: 10}}]});
 // Returns all models that contain "News" in the title OR have more than 10 likes.
 ```
 
@@ -438,7 +368,7 @@ _.query( MyCollection, { $or: [{ title: {$like: "News"}}, { likes: {$gt: 10}}]})
 The opposite of `$or`
 
 ```js
-_.query( MyCollection, { $nor: [{ title: {$like: "News"}}, { likes: {$gt: 10}}]});
+runQuery( MyCollection, { $nor: [{ title: {$like: "News"}}, { likes: {$gt: 10}}]});
 // Returns all models that don't contain "News" in the title NOR have more than 10 likes.
 ```
 
@@ -446,13 +376,13 @@ _.query( MyCollection, { $nor: [{ title: {$like: "News"}}, { likes: {$gt: 10}}]}
 The opposite of `$and`
 
 ```js
-_.query( MyCollection, { $not: { title: {$like: "News"}, likes: {$gt: 10}}});
+runQuery( MyCollection, { $not: { title: {$like: "News"}, likes: {$gt: 10}}});
 // Returns all models that don't contain "News" in the title AND DON'T have more than 10 likes.
 ```
 
 If you need to perform multiple queries on the same key, then you can supply the query as an array:
 ```js
-_.query( MyCollection, {
+runQuery( MyCollection, {
     $or:[
         {title:"News"},
         {title:"About"}
@@ -469,7 +399,7 @@ It is possible to use multiple combined queries, for example searching for model
 and either a category of "abc" or a tag of "xyz"
 
 ```js
-_.query( MyCollection, {
+runQuery( MyCollection, {
     $and: [{ title: {$like: "News"}]},
     $or: [{ likes: {$gt: 10}}, { color:{$contains:"red"}]}
 });
@@ -484,20 +414,20 @@ Chainable API
 Rather than supplying a single query object, you can build up the query bit by bit:
 
 ```javascript
- _.query.build( MyCollection )
+ runQuery.build( MyCollection )
   .and("published", true)
   .or("likes", {$gt:10})
   .or("tags":["javascript", "coffeescript"])
   .run()
 ```
 
-Instead of calling `_.query`, we call `_.query.build`. This returns a query object that we can build before running.
-`_.query.build` can take the collection that you want to query, or alternatively you can pass the collection in when
+Instead of calling `runQuery`, we call `runQuery.build`. This returns a query object that we can build before running.
+`runQuery.build` can take the collection that you want to query, or alternatively you can pass the collection in when
 running the query. Therefore these 2 both give the same results:
 
 ```javascript
- results = _.query.build( MyCollection ).and("published", true).run()
- results = _.query.build().and("published", true).run( MyCollection )
+ results = runQuery.build( MyCollection ).and("published", true).run()
+ results = runQuery.build().and("published", true).run( MyCollection )
 ```
 
 To build the query you can call `.and`, `.or`, `.nor` and `.not`.
@@ -505,8 +435,8 @@ These methods can accept either a query object, or a query key and a query value
 are the same.
 
 ```javascript
- results = _.query.build( MyCollection ).and({"published":true}).run()
- results = _.query.build( MyCollection ).and("published", true).run()
+ results = runQuery.build( MyCollection ).and({"published":true}).run()
+ results = runQuery.build( MyCollection ).and("published", true).run()
 ```
 
 To run the query you can call either `.run`, `.all`, `.find`, or `.all`.
@@ -515,7 +445,7 @@ These methods are all aliases too each other and will run the query returning an
 To retrieve just the first results you can use `.first`. For example:
 
 ```javascript
- firstResult = _.query.build( MyCollection ).and({"published":true}).first()
+ firstResult = runQuery.build( MyCollection ).and({"published":true}).first()
 ```
 
 If you wish to perform further data manipulation using underscore, you can call the `.chain` method.
@@ -523,7 +453,7 @@ This will run the query and return the results as a wrapped underscore object, w
 `.sortBy`, `.groupBy`, `.map`, etc.
 
 ```javascript
-titles = _.query.build( MyCollection )
+titles = runQuery.build( MyCollection )
   .and("published", true)
   .or("likes", {$gt:10})
   .or("tags":["javascript", "coffeescript"])
@@ -544,23 +474,13 @@ I suggest that you benchmark your code to test this out.
 The index method takes either a single key, or a key and a function.
 
 
-```coffeescript
+```js
 
-    query = _.query(array)
+    query = runQuery(array)
       .index("title")
 
-    # could have been .index("title", (obj) -> obj.title)
+    // could have been .index("title", (obj) -> obj.title)
 
     result = query.and("title", "Home").run()
 ```
 
-
-
-Contributors
-===========
-
-Dave Tonge - [davidgtonge](https://github.com/davidgtonge)
-Benjamin Caldwell - [benjamincaldwell](https://github.com/benjamincaldwell)
-Rob W - [Rob W](https://github.com/Rob--W)
-Cezary Wojtkowski - [cezary](https://github.com/cezary)
-Graeme Yeates - [megawac](https://github.com/megawac)

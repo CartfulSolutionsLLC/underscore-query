@@ -1,8 +1,7 @@
 # Requires
-require "coffee-script"
 assert = require('assert')
-_ = require "underscore"
-require("../src/underscore-query")(_)
+_ = require "lodash"
+query = require("../dist/json-query.js").runQuery
 
 _collection =  [
   {title:"Home", colors:["red","yellow","blue"], likes:12, featured:true, content: "Dummy content about coffeescript", blank: null}
@@ -19,7 +18,7 @@ describe "Underscore Query Tests: Blanks", ->
   it "handles null values", ->
 
     a = create()
-    result = _.query a, blank:null
+    result = query a, blank:null
     assert.equal result.length, 1
     assert.equal result[0].title, "Home"
 
@@ -27,7 +26,7 @@ describe "Underscore Query Tests: Blanks", ->
   it "handles empty values", ->
 
     a = create()
-    result = _.query a, blank: ""
+    result = query a, blank: ""
     assert.equal result.length, 1
     assert.equal result[0].title, "About"
 
@@ -35,7 +34,7 @@ describe "Underscore Query Tests: Blanks", ->
   it "handles undefined values", ->
 
     a = create()
-    result = _.query a, blank: undefined
+    result = query a, blank: undefined
     assert.equal result.length, 2
     assert.equal result[0].title, "Contact"
     assert.equal result[1].title, "Careers"
@@ -44,7 +43,7 @@ describe "Underscore Query Tests: Blanks", ->
   it "handles empty array values", ->
 
     a = create()
-    result = _.query a, blank: []
+    result = query a, blank: []
     assert.equal result.length, 1
     assert.equal result[0].title, "Sponsors"
 
@@ -53,7 +52,7 @@ describe "Underscore Query Tests: Blanks", ->
     a = create()
     $blank = $cb: (attr) ->
       attr is null or attr is `undefined` or attr is "" or (attr.length is 0)
-    result = _.query a, blank: $blank
+    result = query a, blank: $blank
     assert.equal result.length, 5
 
 

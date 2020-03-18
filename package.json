@@ -1,36 +1,47 @@
 {
-  "name": "underscore-query",
-  "description": "Lightweight Query API library for Underscore and Lodash",
-  "version": "3.3.2",
-  "author": "Dave Tonge <dave.tonge@momentumft.co.uk> (https://github.com/davidgtonge)",
+  "name": "json-query",
+  "description": "Lightweight Query API library",
+  "version": "0.0.1",
   "tags": [
-    "underscore",
-    "mongo",
-    "ES5",
+    "json",
     "lodash",
-    "elasticsearch",
     "score",
     "boost",
     "query"
   ],
-  "main": "./lib/underscore-query",
+  "main": "./dist/json-query",
   "repository": {
     "type": "git",
     "url": "https://github.com/davidgtonge/underscore-query.git"
   },
   "dependencies": {},
+  "peerDependencies": {
+    "lodash": "^4.17.15"
+  },
   "devDependencies": {
-    "coffee-script": ">=1.7.x",
-    "mocha": "",
-    "backbone": "",
-    "uglify-js": "",
-    "handlebars": "",
-    "lodash": "3.x",
-    "underscore": ">=1.6.x"
+    "@babel/core": "^7.7.4",
+    "@babel/plugin-syntax-dynamic-import": "^7.7.4",
+    "@babel/preset-env": "^7.7.4",
+    "@babel/register": "^7.7.4",
+    "babel-eslint": "^10.1.0",
+    "babel-loader": "^8.0.6",
+    "clean-webpack-plugin": "^3.0.0",
+    "coffeescript": "^2.5.1",
+    "core-js": "^3.4.7",
+    "eslint": "^6.7.2",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "lodash": "^4.17.15",
+    "mocha": "^7.1.0",
+    "prettier": "^1.19.1",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
   },
   "scripts": {
-    "test": "mocha",
-    "build": "cake build",
-    "prepublish": "npm run build"
+    "test": "npm run build && mocha",
+    "prod": "npm run lint && webpack --env.NODE_ENV=prod --mode=production",
+    "build": "npm run lint && webpack --env.NODE_ENV=dev --mode=development",
+    "lint": "eslint --fix . --ext .js src"
   }
 }

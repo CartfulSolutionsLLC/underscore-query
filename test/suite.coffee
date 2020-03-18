@@ -1,6 +1,5 @@
-require "coffee-script"
 assert = require "assert"
-_ = require "underscore"
+_ = require "lodash"
 
 _collection =  [
   {title:"Home", colors:["red","yellow","blue"], likes:12, featured:true, content: "Dummy content about coffeescript", score: 0}
@@ -275,7 +274,7 @@ module.exports = (_query) ->
 
   it "$options errors without regexp", ->
     a = create()
-    assert.throws(-> 
+    assert.throws(->
       result = _query a, content: {$options: 'i'}
     )
 
@@ -556,7 +555,7 @@ module.exports = (_query) ->
       ]
     assert.equal result.length, 0
 
-  it.skip "Testing nested compound operators", ->
+  it "Testing nested compound operators", ->
     a = create()
     result = _query a,
       $and: [
@@ -602,105 +601,6 @@ module.exports = (_query) ->
     assert.equal result.length, 2
     assert.equal result[0].title, "Home"
     assert.equal result[1].title, "About"
-
-  it "works with underscore chain", ->
-    a = create()
-    q =
-      $or: [
-        {title:"Home"}
-        {title:"About"}
-      ]
-    result = _.chain(a).query(q).pluck("title").value()
-
-    assert.equal result.length, 2
-    assert.equal result[0], "Home"
-    assert.equal result[1], "About"
-
-  it "works with a getter property", ->
-    Backbone = require "backbone"
-    a = new Backbone.Collection [
-      {id:1, title:"test"}
-      {id:2, title:"about"}
-    ]
-    result = _query a.models, {title:"about"}, "get"
-    assert.equal result.length, 1
-    assert.equal result[0].get("title"), "about"
-
-  it "can be mixed into backbone collections", ->
-    Backbone = require "backbone"
-    class Collection extends Backbone.Collection
-      query: (params) -> _query @models, params, "get"
-      whereBy: (params) -> new @constructor @query(params)
-      buildQuery: -> _query.build @models, "get"
-
-    a = new Collection [
-      {id:1, title:"test"}
-      {id:2, title:"about"}
-    ]
-    result = a.query {title:"about"}
-    assert.equal result.length, 1
-    assert.equal result[0].get("title"), "about"
-
-
-    result2 = a.whereBy {title:"about"}
-    assert.equal result2.length, 1
-    assert.equal result2.at(0).get("title"), "about"
-    assert.equal result2.pluck("title")[0], "about"
-
-    result3 = a.buildQuery().not(title:"test").run()
-    assert.equal result3.length, 1
-    assert.equal result3[0].get("title"), "about"
-
-
-
-
-  it "can be used for live collections", ->
-    Backbone = require "backbone"
-    class Collection extends Backbone.Collection
-      query: (params) ->
-        if params
-          _query @models, params, "get"
-        else
-          _query.build @models, "get"
-      whereBy: (params) -> new @constructor @query(params)
-      setFilter: (parent, query) ->
-
-        check = _query.tester(query, "get")
-
-        @listenTo parent,
-          add: (model) -> if check(model) then @add(model)
-          remove: @remove
-          change: (model) ->
-            if check(model) then @add(model) else @remove(model)
-
-        @add _query(parent.models, query, "get")
-
-    parent = new Collection [
-      {title:"Home", colors:["red","yellow","blue"], likes:12, featured:true, content: "Dummy content about coffeescript"}
-      {title:"About", colors:["red"], likes:2, featured:true, content: "dummy content about javascript"}
-      {title:"Contact", colors:["red","blue"], likes:20, content: "Dummy content about PHP"}
-    ]
-    live = new Collection
-    live.setFilter parent, {likes:$gt:15}
-
-    assert.equal parent.length, 3
-    assert.equal live.length, 1
-
-    # Change Events
-    parent.at(0).set("likes",16)
-    assert.equal live.length, 2
-    parent.at(2).set("likes",2)
-    assert.equal live.length, 1
-
-    # Add to Parent
-    parent.add [{title:"New", likes:21}, {title:"New2", likes:3}]
-    assert.equal live.length, 2
-    assert.equal parent.length, 5
-
-    # Remove from Parent
-    parent.pop()
-    parent.pop()
-    assert.equal live.length, 1
 
   it "buildQuery works in oo fashion", ->
     a = create()
@@ -753,30 +653,6 @@ module.exports = (_query) ->
     assert.equal result.length, 1
     assert.equal result[0].title, "Home"
 
-  it "$computed", ->
-    Backbone = require "backbone"
-    class testModel extends Backbone.Model
-      full_name: -> "#{@get 'first_name'} #{@get 'last_name'}"
-
-    a = new testModel
-      first_name: "Dave"
-      last_name: "Tonge"
-    b = new testModel
-      first_name: "John"
-      last_name: "Smith"
-    c = [a,b]
-
-    result = _query c,
-      full_name: $computed: "Dave Tonge"
-
-    assert.equal result.length, 1
-    assert.equal result[0].get("first_name"), "Dave"
-
-    result = _query c,
-      full_name: $computed: $likeI: "n sm"
-    assert.equal result.length, 1
-    assert.equal result[0].get("first_name"), "John"
-
   it "Handles multiple inequalities", ->
     a = create()
     result = _query a, likes: {  $gt: 2, $lt: 20  }
@@ -819,8 +695,8 @@ module.exports = (_query) ->
 
     results = _query.score( collection, { price: {$lt:140}, color: {$in:['red', 'blue'] }})
 
-    assert.equal _.findWhere(results, {name:'dress'})._score, 1
-    assert.equal _.findWhere(results, {name:'shoes'})._score, 0.5
+    assert.equal results.find((item) -> item.name == 'dress')._score, 1
+    assert.equal results.find((item) -> item.name == 'shoes')._score, 0.5
 
   it "has a score method with a $boost operator", ->
     collection = [
@@ -831,8 +707,8 @@ module.exports = (_query) ->
 
     results = _query.score( collection, { price: 100, color: {$in:['black'], $boost:3 }})
 
-    assert.equal _.findWhere(results, {name:'dress'})._score, 0.5
-    assert.equal _.findWhere(results, {name:'shoes'})._score, 1.5
+    assert.equal results.find((item) -> item.name == 'dress')._score, 0.5
+    assert.equal results.find((item) -> item.name == 'shoes')._score, 1.5
 
   it "has a score method with a $boost operator - 2", ->
     collection = [
@@ -843,8 +719,8 @@ module.exports = (_query) ->
 
     results = _query.score( collection, { name: {$like:'dre', $boost:5}, color: {$in:['black'], $boost:2 }})
 
-    assert.equal _.findWhere(results, {name:'dress'})._score, 2.5
-    assert.equal _.findWhere(results, {name:'shoes'})._score, 1
+    assert.equal results.find((item) -> item.name == 'dress')._score, 2.5
+    assert.equal results.find((item) -> item.name == 'shoes')._score, 1
 
   it "score method throws if compound query", ->
     collection = [

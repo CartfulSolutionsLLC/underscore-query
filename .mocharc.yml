@@ -1,0 +1,8 @@
+extension:
+  - coffee
+  - js
+require: 'coffeescript/register'
+reporter: spec
+bail: false
+ui: bdd
+spec: test/*.coffee

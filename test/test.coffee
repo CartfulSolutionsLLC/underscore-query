@@ -1,11 +1,10 @@
 # Requires
-require "coffee-script"
 
 assert = require "assert"
-_ = require "underscore"
-require("../src/underscore-query")(_)
+_ = require "lodash"
+query = require("../dist/json-query").runQuery
 
 suite = require "./suite"
 
 describe "Underscore Query Tests", ->
-  suite(_.query)
+  suite(query)
