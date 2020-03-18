@@ -12,7 +12,7 @@
   "main": "./dist/json-query",
   "repository": {
     "type": "git",
-    "url": "https://github.com/davidgtonge/underscore-query.git"
+    "url": "https://github.com/CartfulSolutionsLLC/underscore-query"
   },
   "dependencies": {},
   "peerDependencies": {
