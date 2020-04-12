@@ -636,6 +636,11 @@ module.exports = (_query) ->
     assert.equal result.length, 1
     assert.equal result[0].title, "About"
 
+    # TODO: SUPPORT THIS
+    # result = _query collection, {stats:{likes:5}}
+    # assert.equal result.length, 1
+    # assert.equal result[0].title, "About"
+
     result = _query collection, {"stats.views.a.b":796}
     assert.equal result.length, 1
     assert.equal result[0].title, "Code"
